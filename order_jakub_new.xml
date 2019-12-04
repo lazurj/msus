@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>7</id>
+	<!-- TODO: vytiahnut data zo vsetkych stock.xml -->
+	<title>admin</title>
+	<!-- TRANSACTIONS -->
+	<!-- ROLES -->
+	<role>
+		<id>admin</id>
+		<title>admin</title>
+	</role>
+	<role>
+		<id>customer</id>
+		<title>Zákaznik</title>
+	</role>
+	<!-- DATA -->
+	<data type="enumeration">
+		<id>jedlo</id>
+		<title>Jedlo - vsetky</title>
+		<values>Krtkova-torta</values>
+		<values>Banan</values>
+	</data>
+	<data type="enumeration">
+		<id>jedlo_active</id>
+		<title>Jedlo - dostupne jedla</title>
+	</data>
+	<data type="text">
+		<id>Krtkova-torta</id>
+		<title>SK</title>
+		<init>banan#2</init>
+	</data>
+	<data type="text">
+		<id>Banan</id>
+		<title>SB</title>
+		<init>banan#1</init>
+	</data>
+	<data type="text">
+		<id>iban</id>
+		<title>IBAN</title>
+	</data>
+	<data type="text">
+		<id>adresa</id>
+		<title>Adresa</title>
+	</data>
+	<data type="enumeration">
+		<id>doprava</id>
+		<title>Doprava</title>
+		<values>Osobne</values>
+		<values>Kurier</values>
+	</data>
+	<data type="number">
+		<id>pocetJedal</id>
+		<title>Pocet jedal</title>
+	</data>
+	<data type="enumeration">
+		<id>vybraneJedla</id>
+		<title>Vybrane jedal</title>
+	</data>
+	<data type="number">
+		<id>pocetJedalHotovych</id>
+		<title>Pocet hotovych jedal</title>
+	</data>
+	<data type="text">
+		<id>rozok</id>
+		<title>rozok</title>
+	</data>
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>7</id>
+		<x>140</x>
+		<y>180</y>
+		<label>Pick a food</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>pickFood</id>
+			<title>Vyber jedal</title>
+			<dataRef>
+				<id>jedlo_active</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<event type="finish">
+			<id>2</id>
+			<actions phase="post">
+				<action trigger="set">
+				pocetJedal: f.pocetJedal,
+				vybraneJedla: f.vybraneJedla,
+				jedla : f.jedlo_active;
+				if(vybraneJedla.choices == null){ change vybraneJedla choices { new java.util.LinkedHashSet() } }
+				change pocetJedal value { pocetJedal.value +1 }
+				change vybraneJedla choices { vybraneJedla.choices +=  jedla.value}
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>15</id>
+		<x>300</x>
+		<y>180</y>
+		<label>Pay for food</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>payForFood</id>
+			<title>Zaplat</title>
+			<dataRef>
+				<id>iban</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>adresa</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>doprava</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<event type="finish">
+			<id>make_foods</id>
+			<actions phase="post">
+				<action trigger="set">
+				pocetJedal: f.pocetJedal,
+				vybranejedla : f.vybraneJedla;
+				def iter = 0
+				vybranejedla.choices.each{ jedlo ->
+					def child = createCase("skupina13matusFood", "Jedlo -"+jedlo, "color-fg-amber-500")
+					def task = assignTask("46", child, loggedUser())
+					setData(task, [ "parent_id": [ "value" : useCase.stringId, "type" : "text" ] ])
+					finishTask(task)
+				}
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>18</id>
+		<x>580</x>
+		<y>220</y>
+		<label>Ship</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>19</id>
+		<x>740</x>
+		<y>140</y>
+		<label>Eat</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>29</id>
+		<x>420</x>
+		<y>180</y>
+		<label>auto/Food preparation</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<!--<event type="finish">
+			<id>check_foods</id>
+			<actions phase="pre">
+				<action trigger="set">
+				pocetJedal: f.pocetJedal,
+				pocetJedalHotovych: f.pocetJedalHotovych;
+				if (pocetJedal.value == pocetJedalHotovych.value){
+					def task = assignTask("15", useCase, loggedUser())
+					finishTask(task)
+				} else {
+					change pocetJedalHotovych value { pocetJedalHotovych.value + 1 }
+				}
+				</action>
+			</actions>
+		</event>-->
+	</transition>
+	<transition>
+		<id>35</id>
+		<x>60</x>
+		<y>60</y>
+		<label>Create an order</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<event type="finish">
+			<id>get_stock</id>
+			<actions phase="post">
+				<action>
+					foods : f.jedlo,
+					activeFoods : f.jedlo_active;
+					change activeFoods choices { new java.util.LinkedHashSet() } 
+					def recepty = [:]
+					recepty["Krtkova-torta"] = 'Banan#2##Kaktus#1'
+					recepty["Banan"] = 'Banan#1'
+					<!--def rozokCase = findCase( { it.title.eq("rozok") & it.processIdentifier.eq("STK") } );-->
+					def supplies = findCases( { it.processIdentifier.eq("skupina13Stock") } )
+					<!--def usecase = findCase({ it.title.eq("rozok") }).first() -->
+					
+					<!--Case rozokCase = findCase( { it._id.eq(new org.bson.types.ObjectId("STK-1612157024")) } );-->
+					<!-- & it.processIdentifier.eq("skupina13Stock") -->
+
+					foods.choices.each { food -> 
+						def all_ingredients = recepty[food.toString()] as String
+						def ingredients = all_ingredients.split('##')
+						def ingredientReadyCounter = 0
+						ingredients.each {
+							def foodPrepData = (it as String).split('#')
+							
+							(supplies.size() as Integer).times { iter ->
+								def supply = supplies.get(iter)
+								if(supply.title.equals(foodPrepData[0] as String) &amp;&amp; (supply.dataSet["item_count"].value.toInteger().value >= foodPrepData[1].toInteger().value)) {
+									ingredientReadyCounter++
+								}
+							}
+						}
+						if(ingredients.length == ingredientReadyCounter) { change activeFoods choices {activeFoods.choices += food}}
+					}
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>52</id>
+		<x>140</x>
+		<y>380</y>
+		<label>Details</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<view>true</view>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<view>true</view>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>detail</id>
+			<title>Detail objednavky</title>
+			<dataRef>
+				<id>jedlo</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+				<id>rozok</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>iban</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>adresa</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>pocetJedal</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>pocetJedalHotovych</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>doprava</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+	</transition>
+	<transition>
+		<id>65</id>
+		<x>740</x>
+		<y>220</y>
+		<label>Delivered</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+	</transition>
+	<!-- PLACES -->
+	<place>
+		<id>14</id>
+		<x>220</x>
+		<y>180</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>16</id>
+		<x>500</x>
+		<y>180</y>
+		<label>order_is_ok</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>20</id>
+		<x>660</x>
+		<y>220</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>28</id>
+		<x>340</x>
+		<y>180</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>34</id>
+		<x>140</x>
+		<y>100</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>38</id>
+		<x>20</x>
+		<y>140</y>
+		<label>init</label>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>51</id>
+		<x>140</x>
+		<y>260</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<!-- ARCS -->
+	<arc>
+		<id>21</id>
+		<type>regular</type>
+		<sourceId>7</sourceId>
+		<destinationId>14</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>25</id>
+		<type>regular</type>
+		<sourceId>18</sourceId>
+		<destinationId>20</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>30</id>
+		<type>regular</type>
+		<sourceId>15</sourceId>
+		<destinationId>28</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>31</id>
+		<type>regular</type>
+		<sourceId>28</sourceId>
+		<destinationId>29</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>32</id>
+		<type>regular</type>
+		<sourceId>29</sourceId>
+		<destinationId>16</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>36</id>
+		<type>regular</type>
+		<sourceId>35</sourceId>
+		<destinationId>34</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>39</id>
+		<type>regular</type>
+		<sourceId>38</sourceId>
+		<destinationId>35</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>53</id>
+		<type>regular</type>
+		<sourceId>7</sourceId>
+		<destinationId>51</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>66</id>
+		<type>regular</type>
+		<sourceId>20</sourceId>
+		<destinationId>65</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>73</id>
+		<type>read</type>
+		<sourceId>34</sourceId>
+		<destinationId>7</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>75</id>
+		<type>regular</type>
+		<sourceId>34</sourceId>
+		<destinationId>15</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>76</id>
+		<type>reset</type>
+		<sourceId>14</sourceId>
+		<destinationId>15</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>81</id>
+		<type>inhibitor</type>
+		<sourceId>28</sourceId>
+		<destinationId>18</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>379</x><y>222</y></breakPoint>
+	</arc>
+	<arc>
+		<id>82</id>
+		<type>inhibitor</type>
+		<sourceId>28</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>380</x><y>142</y></breakPoint>
+	</arc>
+	<arc>
+		<id>83</id>
+		<type>reset</type>
+		<sourceId>16</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>84</id>
+		<type>reset</type>
+		<sourceId>16</sourceId>
+		<destinationId>18</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>85</id>
+		<type>regular</type>
+		<sourceId>16</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>700</x><y>180</y></breakPoint>
+	</arc>
+	<arc>
+		<id>86</id>
+		<type>regular</type>
+		<sourceId>16</sourceId>
+		<destinationId>18</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>540</x><y>220</y></breakPoint>
+	</arc>
+	<arc>
+		<id>93</id>
+		<type>regular</type>
+		<sourceId>14</sourceId>
+		<destinationId>15</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>253</x><y>207</y></breakPoint>
+	</arc>
+	<arc>
+		<id>95</id>
+		<type>regular</type>
+		<sourceId>51</sourceId>
+		<destinationId>52</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>96</id>
+		<type>regular</type>
+		<sourceId>52</sourceId>
+		<destinationId>51</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>175</x><y>322</y></breakPoint>
+	</arc>
+</document>
