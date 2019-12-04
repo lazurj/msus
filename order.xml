@@ -24,35 +24,56 @@
 	<data type="text">
 		<id>iban</id>
 		<title>IBAN</title>
+		<placeholder>SK0000000000000000000000</placeholder>
+		<valid>regex("[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}")</valid>
 	</data>
+	-<data type="text">
+		<id>telefon</id>
+		<title>Telefónne číslo</title>
+		<placeholder>+421 000 000 000</placeholder>
+		<valid>regex("^[+]([0-9]+)([ ]?[0-9])+\$")</valid>
+	</data>
+
 	<data type="text">
 		<id>adresa</id>
 		<title>Adresa</title>
+		<placeholder>Bratislavská 1, Bratislava</placeholder>
 	</data>
 	<data type="enumeration">
 		<id>doprava</id>
 		<title>Doprava</title>
-		<values>Osobne</values>
-		<values>Kurier</values>
+		<values>Osobný odber</values>
+		<values>Kuriér</values>
+		<init>Kuriér</init>
 	</data>
 	<data type="number">
 		<id>pocetJedal</id>
 		<title>Pocet jedal</title>
 	</data>
-		<data type="number">
+	<data type="number">
 		<id>pocetJedalHotovych</id>
-		<title>Pocet hotovych jedal</title>
+		<title>Objednané množstvo</title>
 	</data>
 	<data type="text">
 		<id>rozok</id>
 		<title>rozok</title>
+	</data>
+	<data type="text">
+		<id>55</id>
+		<title>vyberKurier</title>
+		<init>1</init>
+	</data>
+	<data type="text">
+		<id>56</id>
+		<title>vyberOsobne</title>
+		<init>2</init>
 	</data>
 	<!-- TRANSITIONS -->
 	<transition>
 		<id>7</id>
 		<x>140</x>
 		<y>180</y>
-		<label>Pick a food</label>
+		<label>Výber jedla</label>
 		<assignPolicy>auto</assignPolicy>
 		<roleRef>
 			<id>admin</id>
@@ -68,7 +89,7 @@
 		</roleRef>
 		<dataGroup>
 			<id>pickFood</id>
-			<title>Vyber jedal</title>
+			<title>Zvolte jedlo</title>
 			<dataRef>
 				<id>jedlo</id>
 				<logic>
@@ -83,7 +104,7 @@
 				<action trigger="set">
 				pocetJedal: f.pocetJedal;
 				change pocetJedal value { pocetJedal.value +1 }
-				</action>
+			</action>
 			</actions>
 		</event>
 	</transition>
@@ -91,7 +112,7 @@
 		<id>15</id>
 		<x>300</x>
 		<y>180</y>
-		<label>Pay for food</label>
+		<label>Platba objednávky</label>
 		<assignPolicy>auto</assignPolicy>
 		<roleRef>
 			<id>admin</id>
@@ -107,7 +128,7 @@
 		</roleRef>
 		<dataGroup>
 			<id>payForFood</id>
-			<title>Zaplat</title>
+			<title>Vyplňte fakturačné údaje</title>
 			<dataRef>
 				<id>iban</id>
 				<logic>
@@ -129,8 +150,16 @@
 					<behavior>required</behavior>
 				</logic>
 			</dataRef>
+			<dataRef>
+				<id>telefon</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
 		</dataGroup>
 		<event type="finish">
+			<id>set_hrany</id>
 			<id>make_foods</id>
 			<actions phase="post">
 				<action trigger="set">
@@ -143,6 +172,18 @@
 					finishTask(task)
 					iter++
 				}
+				vyberOsobne : f.56,
+				vyberKurier : f.55,
+				typDopravy : f.doprava;
+
+				if((typDopravy.value as String).equals("Osobný odber")){
+					change vyberOsobne value { 1 }
+					change vyberKurier value { 2 }
+				}
+				if((typDopravy.value as String).equals("Kuriér")){
+					change vyberOsobne value { 2 }
+					change vyberKurier value { 1 }
+				}
 				</action>
 			</actions>
 		</event>
@@ -151,7 +192,7 @@
 		<id>18</id>
 		<x>580</x>
 		<y>220</y>
-		<label>Ship</label>
+		<label>Doručenie objednávky</label>
 		<assignPolicy>auto</assignPolicy>
 		<finishPolicy>auto_no_data</finishPolicy>
 		<roleRef>
@@ -171,7 +212,7 @@
 		<id>19</id>
 		<x>740</x>
 		<y>140</y>
-		<label>Eat</label>
+		<label>Osobné vyzdvihnutie objednávky</label>
 		<assignPolicy>auto</assignPolicy>
 		<finishPolicy>auto_no_data</finishPolicy>
 		<roleRef>
@@ -220,7 +261,7 @@
 		<id>35</id>
 		<x>60</x>
 		<y>60</y>
-		<label>Create an order</label>
+		<label>Vytvorenie objednávky</label>
 		<assignPolicy>auto</assignPolicy>
 		<roleRef>
 			<id>customer</id>
@@ -256,7 +297,7 @@
 		<id>52</id>
 		<x>140</x>
 		<y>380</y>
-		<label>Details</label>
+		<label>Detaily objednávky</label>
 		<roleRef>
 			<id>admin</id>
 			<logic>
@@ -271,7 +312,7 @@
 		</roleRef>
 		<dataGroup>
 			<id>detail</id>
-			<title>Detail objednavky</title>
+			<title>Detaily objednávky</title>
 			<dataRef>
 				<id>jedlo</id>
 				<logic>
@@ -301,13 +342,13 @@
 				</logic>
 			</dataRef>
 			<dataRef>
-				<id>pocetJedalHotovych</id>
+				<id>doprava</id>
 				<logic>
 					<behavior>visible</behavior>
 				</logic>
 			</dataRef>
 			<dataRef>
-				<id>doprava</id>
+				<id>telefon</id>
 				<logic>
 					<behavior>visible</behavior>
 				</logic>
@@ -318,7 +359,7 @@
 		<id>65</id>
 		<x>740</x>
 		<y>220</y>
-		<label>Delivered</label>
+		<label>Doručené</label>
 		<assignPolicy>auto</assignPolicy>
 		<finishPolicy>auto_no_data</finishPolicy>
 		<roleRef>
@@ -502,18 +543,18 @@
 	</arc>
 	<arc>
 		<id>85</id>
-		<type>regular</type>
+		<type>variable</type>
 		<sourceId>16</sourceId>
 		<destinationId>19</destinationId>
-		<multiplicity>1</multiplicity>
+		<multiplicity>56</multiplicity>
 		<breakPoint><x>700</x><y>180</y></breakPoint>
 	</arc>
 	<arc>
 		<id>86</id>
-		<type>regular</type>
+		<type>variable</type>
 		<sourceId>16</sourceId>
 		<destinationId>18</destinationId>
-		<multiplicity>1</multiplicity>
+		<multiplicity>55</multiplicity>
 		<breakPoint><x>540</x><y>220</y></breakPoint>
 	</arc>
 	<arc>

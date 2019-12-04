@@ -25,7 +25,7 @@
 		<id>1</id>
 		<x>340</x>
 		<y>220</y>
-		<label>Done</label>
+		<label>Jedlo hotové</label>
 		<assignPolicy>auto</assignPolicy>
 		<finishPolicy>auto_no_data</finishPolicy>
 		<roleRef>
@@ -70,7 +70,7 @@
 		<id>3</id>
 		<x>180</x>
 		<y>220</y>
-		<label>Preparation</label>
+		<label>Príprava jedla</label>
 		<assignPolicy>auto</assignPolicy>
 		<finishPolicy>auto_no_data</finishPolicy>
 		<roleRef>
@@ -92,7 +92,7 @@
 		<id>19</id>
 		<x>260.00720977783203</x>
 		<y>312</y>
-		<label>Spoiled</label>
+		<label>Jedlo nevhodné/pokazené</label>
 		<assignPolicy>auto</assignPolicy>
 		<finishPolicy>auto_no_data</finishPolicy>
 		<roleRef>
@@ -114,7 +114,7 @@
 		<id>46</id>
 		<x>46.00720977783203</x>
 		<y>299</y>
-		<label>init_t</label>
+		<label>Inicializácia skladu</label>
 		<assignPolicy>auto</assignPolicy>
 		<finishPolicy>auto_no_data</finishPolicy>
 		<roleRef>
