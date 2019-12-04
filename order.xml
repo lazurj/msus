@@ -64,6 +64,11 @@
 		<title>Vybrane jedla</title>
 		<init></init>
 	</data>
+	<data type="text">
+		<id>recepty</id>
+		<title>Vybrane jedla</title>
+		<init></init>
+	</data>
 	<data type="number">
 		<id>pocetJedalHotovych</id>
 		<title>Objednané množstvo</title>
@@ -299,14 +304,29 @@
 			<actions phase="post">
 				<action>
 					foods : f.jedlo,
-					activeFoods : f.jedlo_active;
+					activeFoods : f.jedlo_active,
+					globalRecepty : f.recepty;
 					change activeFoods choices { new java.util.LinkedHashSet() } 
 					def recepty = [:]
+					recepty["banan"] = 'banan#1'
 					recepty["vegetarian-burger"] = 'zemla#1##rajcina#2##salat#2'
 					recepty["hovadzi-burger"] = 'zemla#1##hovadzie#1##rajcina#2##salat#2'
 					recepty["double-hovadzi-burger"] = 'zemla#1##hovadzie#2##rajcina#2##salat#2'
 					recepty["kuraci-burger"] = 'zemla#1##kuracie#1##rajcina#2##salat#2'
 					recepty["hot-dog"] = 'rozok#1##parok#1'
+
+					def tmp = ''
+					def first = true
+					recepty.each { key, value ->
+						if (first == false) {
+							tmp += '|'
+						}
+						first = false;
+						tmp += key
+						tmp += '!'
+						tmp += value	
+					}
+					change globalRecepty value { tmp as String}
 
 					def supplies = findCases( { it.processIdentifier.eq("skupina13Stock") } )
 					foods.choices.each { food -> 
@@ -363,7 +383,7 @@
 				</logic>
 			</dataRef>
 			<dataRef>
-				<id>adresa</id>
+				<id>recepty</id>
 				<logic>
 					<behavior>visible</behavior>
 				</logic>
