@@ -16,10 +16,16 @@
 	<!-- DATA -->
 	<data type="enumeration">
 		<id>jedlo</id>
-		<title>Jedlo</title>
-		<values>Krtkova torta</values>
-		<values>Banan</values>
-		<values>Hot-dog</values>
+		<title>Jedlo - vsetky</title>
+		<values>vegetarian-burger</values>
+		<values>hovadzi-burger</values>
+		<values>double-hovadzi-burger</values>
+		<values>kuraci-burger</values>
+		<values>hot-dog</values>
+	</data>
+	<data type="enumeration">
+		<id>jedlo_active</id>
+		<title>Jedlo - dostupne jedla</title>
 	</data>
 	<data type="text">
 		<id>iban</id>
@@ -27,13 +33,12 @@
 		<placeholder>SK0000000000000000000000</placeholder>
 		<valid>regex("[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}")</valid>
 	</data>
-	-<data type="text">
+	<data type="text">
 		<id>telefon</id>
 		<title>Telefónne číslo</title>
 		<placeholder>+421 000 000 000</placeholder>
 		<valid>regex("^[+]([0-9]+)([ ]?[0-9])+\$")</valid>
-	</data>
-
+	</data>	
 	<data type="text">
 		<id>adresa</id>
 		<title>Adresa</title>
@@ -50,13 +55,18 @@
 		<id>pocetJedal</id>
 		<title>Pocet jedal</title>
 	</data>
+	<data type="enumeration">
+		<id>vybraneJedla</id>
+		<title>Vybrane jedla</title>
+	</data>
+		<data type="text">
+		<id>vybraneJedlaText</id>
+		<title>Vybrane jedla</title>
+		<init></init>
+	</data>
 	<data type="number">
 		<id>pocetJedalHotovych</id>
 		<title>Objednané množstvo</title>
-	</data>
-	<data type="text">
-		<id>rozok</id>
-		<title>rozok</title>
 	</data>
 	<data type="text">
 		<id>55</id>
@@ -67,6 +77,11 @@
 		<id>56</id>
 		<title>vyberOsobne</title>
 		<init>2</init>
+	</data>
+	<data type="text">
+		<id>podpis</id>
+		<title>Podpis</title>
+		<valid>regex("[a-zA-Z]")</valid>
 	</data>
 	<!-- TRANSITIONS -->
 	<transition>
@@ -91,7 +106,7 @@
 			<id>pickFood</id>
 			<title>Zvolte jedlo</title>
 			<dataRef>
-				<id>jedlo</id>
+				<id>jedlo_active</id>
 				<logic>
 					<behavior>editable</behavior>
 					<behavior>required</behavior>
@@ -99,12 +114,18 @@
 			</dataRef>
 		</dataGroup>
 		<event type="finish">
-			<id>2</id>
+			<id>vyber_jedla</id>
 			<actions phase="post">
 				<action trigger="set">
-				pocetJedal: f.pocetJedal;
-				change pocetJedal value { pocetJedal.value +1 }
-			</action>
+					pocetJedal: f.pocetJedal,
+					vybraneJedla: f.vybraneJedla,
+					vybraneJedlaText: f.vybraneJedlaText,
+					jedla : f.jedlo_active;
+					if(vybraneJedla.choices == null){ change vybraneJedla choices { new java.util.LinkedHashSet() } }
+					change pocetJedal value { pocetJedal.value +1 }
+					change vybraneJedla choices { vybraneJedla.choices +=  jedla.value}
+					change vybraneJedlaText value { vybraneJedlaText.value += ((jedla.value as String) + ", " as String)}
+				</action>
 			</actions>
 		</event>
 	</transition>
@@ -159,11 +180,14 @@
 			</dataRef>
 		</dataGroup>
 		<event type="finish">
-			<id>set_hrany</id>
 			<id>make_foods</id>
 			<actions phase="post">
 				<action trigger="set">
-				pocetJedal: f.pocetJedal;
+				pocetJedal: f.pocetJedal,
+				vyberOsobne : f.56,
+				vyberKurier : f.55,
+				typDopravy : f.doprava;
+				
 				def iter = 0
 				(pocetJedal.value as Integer).times{
 					def child = createCase("skupina13matusFood", "Jedlo "+iter.toString(), "color-fg-amber-500")
@@ -172,9 +196,6 @@
 					finishTask(task)
 					iter++
 				}
-				vyberOsobne : f.56,
-				vyberKurier : f.55,
-				typDopravy : f.doprava;
 
 				if((typDopravy.value as String).equals("Osobný odber")){
 					change vyberOsobne value { 1 }
@@ -277,18 +298,33 @@
 			<id>get_stock</id>
 			<actions phase="post">
 				<action>
-					rozok : f.rozok,
-					rozok_case : f.iban;
-					
-					<!--def rozokCase = findCase( { it.title.eq("rozok") & it.processIdentifier.eq("STK") } );-->
-					def rozokCases = findCases( { it.processIdentifier.eq("skupina13Stock") } )
-					<!--def usecase = findCase({ it.title.eq("rozok") }).first() -->
-					
-					<!--Case rozokCase = findCase( { it._id.eq(new org.bson.types.ObjectId("STK-1612157024")) } );-->
-<!-- & it.processIdentifier.eq("skupina13Stock") -->
-					
+					foods : f.jedlo,
+					activeFoods : f.jedlo_active;
+					change activeFoods choices { new java.util.LinkedHashSet() } 
+					def recepty = [:]
+					recepty["vegetarian-burger"] = 'zemla#1##rajcina#2##salat#2'
+					recepty["hovadzi-burger"] = 'zemla#1##hovadzie#1##rajcina#2##salat#2'
+					recepty["double-hovadzi-burger"] = 'zemla#1##hovadzie#2##rajcina#2##salat#2'
+					recepty["kuraci-burger"] = 'zemla#1##kuracie#1##rajcina#2##salat#2'
+					recepty["hot-dog"] = 'rozok#1##parok#1'
 
-					change rozok value { rozokCases.get(0).dataSet["item_count"].value }
+					def supplies = findCases( { it.processIdentifier.eq("skupina13Stock") } )
+					foods.choices.each { food -> 
+						def all_ingredients = recepty[food.toString()] as String
+						def ingredients = all_ingredients.split('##')
+						def ingredientReadyCounter = 0
+						ingredients.each {
+							def foodPrepData = (it as String).split('#')
+							
+							(supplies.size() as Integer).times { iter ->
+								def supply = supplies.get(iter)
+								if(supply.title.equals(foodPrepData[0] as String) &amp;&amp; (supply.dataSet["item_count"].value.toInteger().value >= foodPrepData[1].toInteger().value)) {
+									ingredientReadyCounter++
+								}
+							}
+						}
+						if(ingredients.length == ingredientReadyCounter) { change activeFoods choices {activeFoods.choices += food}}
+					}
 				</action>
 			</actions>
 		</event>
@@ -298,6 +334,7 @@
 		<x>140</x>
 		<y>380</y>
 		<label>Detaily objednávky</label>
+		<assignPolicy>auto</assignPolicy>
 		<roleRef>
 			<id>admin</id>
 			<logic>
@@ -307,18 +344,14 @@
 		<roleRef>
 			<id>customer</id>
 			<logic>
-				<view>true</view>
+				<perform>true</perform>
 			</logic>
 		</roleRef>
 		<dataGroup>
 			<id>detail</id>
 			<title>Detaily objednávky</title>
 			<dataRef>
-				<id>jedlo</id>
-				<logic>
-					<behavior>visible</behavior>
-				</logic>
-				<id>rozok</id>
+				<id>vybraneJedlaText</id>
 				<logic>
 					<behavior>visible</behavior>
 				</logic>
@@ -367,7 +400,28 @@
 			<logic>
 				<perform>true</perform>
 			</logic>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
 		</roleRef>
+		<dataGroup>
+			<id>dorucene</id>
+			<title>Doručenie objednávky</title>
+			<dataRef>
+				<id>vybraneJedlaText</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>podpis</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
 	</transition>
 	<!-- PLACES -->
 	<place>
