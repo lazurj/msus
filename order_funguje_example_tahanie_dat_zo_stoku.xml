@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>7</id>
+	<!-- TODO: vytiahnut data zo vsetkych stock.xml -->
+	<title>admin</title>
+	<!-- TRANSACTIONS -->
+	<!-- ROLES -->
+	<role>
+		<id>admin</id>
+		<title>admin</title>
+	</role>
+	<role>
+		<id>customer</id>
+		<title>Zákaznik</title>
+	</role>
+	<!-- DATA -->
+	<data type="enumeration">
+		<id>jedlo</id>
+		<title>Jedlo</title>
+		<values>Krtkova torta</values>
+		<values>Banan</values>
+		<values>Hot-dog</values>
+	</data>
+	<data type="text">
+		<id>iban</id>
+		<title>IBAN</title>
+		<placeholder>SK0000000000000000000000</placeholder>
+		<valid>regex("[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}")</valid>
+	</data>
+	-<data type="text">
+		<id>telefon</id>
+		<title>Telefónne číslo</title>
+		<placeholder>+421 000 000 000</placeholder>
+		<valid>regex("^[+]([0-9]+)([ ]?[0-9])+\$")</valid>
+	</data>
+
+	<data type="text">
+		<id>adresa</id>
+		<title>Adresa</title>
+		<placeholder>Bratislavská 1, Bratislava</placeholder>
+	</data>
+	<data type="enumeration">
+		<id>doprava</id>
+		<title>Doprava</title>
+		<values>Osobný odber</values>
+		<values>Kuriér</values>
+		<init>Kuriér</init>
+	</data>
+	<data type="number">
+		<id>pocetJedal</id>
+		<title>Objednané množstvo</title>
+	</data>
+	<data type="text">
+		<id>rozok</id>
+		<title>rozok</title>
+	</data>
+	<data type="text">
+		<id>55</id>
+		<title>vyberKurier</title>
+		<init>1</init>
+	</data>
+	<data type="text">
+		<id>56</id>
+		<title>vyberOsobne</title>
+		<init>2</init>
+	</data>
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>7</id>
+		<x>140</x>
+		<y>180</y>
+		<label>Výber jedla</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>pickFood</id>
+			<title>Zvolte jedlo</title>
+			<dataRef>
+				<id>jedlo</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+	</transition>
+	<transition>
+		<id>15</id>
+		<x>300</x>
+		<y>180</y>
+		<label>Platba objednávky</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>payForFood</id>
+			<title>Vyplňte fakturačné údaje</title>
+			<dataRef>
+				<id>iban</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>adresa</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>doprava</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>telefon</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<event type="finish">
+			<id>set_if_osobne_or_Kurier</id>
+			<actions phase="post">
+				<action>
+						
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>18</id>
+		<x>580</x>
+		<y>220</y>
+		<label>Doručenie objednávky</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>19</id>
+		<x>740</x>
+		<y>140</y>
+		<label>Osobné vyzdvihnutie objednávky</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>29</id>
+		<x>420</x>
+		<y>180</y>
+		<label>auto/Food preparation</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>35</id>
+		<x>60</x>
+		<y>60</y>
+		<label>Vytvorenie objednávky</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<event type="finish">
+			<id>get_stock</id>
+			<actions phase="post">
+				<action>
+					rozok : f.rozok,
+					rozok_case : f.iban;
+					
+					<!--def rozokCase = findCase( { it.title.eq("rozok") & it.processIdentifier.eq("STK") } );-->
+					def rozokCases = findCases( { it.processIdentifier.eq("skupina13Stock") } )
+					<!--def usecase = findCase({ it.title.eq("rozok") }).first() -->
+					
+					<!--Case rozokCase = findCase( { it._id.eq(new org.bson.types.ObjectId("STK-1612157024")) } );-->
+<!-- & it.processIdentifier.eq("skupina13Stock") -->
+					
+
+					change rozok value { rozokCases.get(0).dataSet["item_count"].value }
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>52</id>
+		<x>140</x>
+		<y>380</y>
+		<label>Detaily objednávky</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<view>true</view>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>customer</id>
+			<logic>
+				<view>true</view>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>detail</id>
+			<title>Detaily objednávky</title>
+			<dataRef>
+				<id>rozok</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>iban</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>adresa</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>pocetJedal</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>doprava</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>telefon</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+	</transition>
+	<transition>
+		<id>65</id>
+		<x>740</x>
+		<y>220</y>
+		<label>Delivered</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+	</transition>
+	<!-- PLACES -->
+	<place>
+		<id>14</id>
+		<x>220</x>
+		<y>180</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>16</id>
+		<x>500</x>
+		<y>180</y>
+		<label>order_is_ok</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>20</id>
+		<x>660</x>
+		<y>220</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>28</id>
+		<x>340</x>
+		<y>180</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>34</id>
+		<x>140</x>
+		<y>100</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>38</id>
+		<x>20</x>
+		<y>140</y>
+		<label>init</label>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>51</id>
+		<x>140</x>
+		<y>260</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<!-- ARCS -->
+	<arc>
+		<id>21</id>
+		<type>regular</type>
+		<sourceId>7</sourceId>
+		<destinationId>14</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>25</id>
+		<type>regular</type>
+		<sourceId>18</sourceId>
+		<destinationId>20</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>30</id>
+		<type>regular</type>
+		<sourceId>15</sourceId>
+		<destinationId>28</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>31</id>
+		<type>regular</type>
+		<sourceId>28</sourceId>
+		<destinationId>29</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>32</id>
+		<type>regular</type>
+		<sourceId>29</sourceId>
+		<destinationId>16</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>36</id>
+		<type>regular</type>
+		<sourceId>35</sourceId>
+		<destinationId>34</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>39</id>
+		<type>regular</type>
+		<sourceId>38</sourceId>
+		<destinationId>35</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>53</id>
+		<type>regular</type>
+		<sourceId>7</sourceId>
+		<destinationId>51</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>66</id>
+		<type>regular</type>
+		<sourceId>20</sourceId>
+		<destinationId>65</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>73</id>
+		<type>read</type>
+		<sourceId>34</sourceId>
+		<destinationId>7</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>75</id>
+		<type>regular</type>
+		<sourceId>34</sourceId>
+		<destinationId>15</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>76</id>
+		<type>reset</type>
+		<sourceId>14</sourceId>
+		<destinationId>15</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>81</id>
+		<type>inhibitor</type>
+		<sourceId>28</sourceId>
+		<destinationId>18</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>379</x><y>222</y></breakPoint>
+	</arc>
+	<arc>
+		<id>82</id>
+		<type>inhibitor</type>
+		<sourceId>28</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>380</x><y>142</y></breakPoint>
+	</arc>
+	<arc>
+		<id>83</id>
+		<type>reset</type>
+		<sourceId>16</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>84</id>
+		<type>reset</type>
+		<sourceId>16</sourceId>
+		<destinationId>18</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>85</id>
+		<type>variable</type>
+		<sourceId>16</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>56</multiplicity>
+		<breakPoint><x>700</x><y>180</y></breakPoint>
+	</arc>
+	<arc>
+		<id>86</id>
+		<type>variable</type>
+		<sourceId>16</sourceId>
+		<destinationId>18</destinationId>
+		<multiplicity>55</multiplicity>
+		<breakPoint><x>540</x><y>220</y></breakPoint>
+	</arc>
+	<arc>
+		<id>93</id>
+		<type>regular</type>
+		<sourceId>14</sourceId>
+		<destinationId>15</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>253</x><y>207</y></breakPoint>
+	</arc>
+	<arc>
+		<id>95</id>
+		<type>regular</type>
+		<sourceId>51</sourceId>
+		<destinationId>52</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>96</id>
+		<type>regular</type>
+		<sourceId>52</sourceId>
+		<destinationId>51</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>175</x><y>322</y></breakPoint>
+	</arc>
+</document>
