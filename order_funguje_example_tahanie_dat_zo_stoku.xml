@@ -146,10 +146,21 @@
 			</dataRef>
 		</dataGroup>
 		<event type="finish">
-			<id>set_if_osobne_or_Kurier</id>
-			<actions phase="post">
+			<id>set_hrany</id>
+			<actions phase="pre">
 				<action>
-						
+				vyberOsobne : f.56,
+				vyberKurier : f.55,
+				typDopravy : f.doprava;
+
+				if((typDopravy.value as String).equals("Osobný odber")){
+					change vyberOsobne value { 1 }
+					change vyberKurier value { 2 }
+				}
+				if((typDopravy.value as String).equals("Kuriér")){
+					change vyberOsobne value { 2 }
+					change vyberKurier value { 1 }
+					}
 				</action>
 			</actions>
 		</event>
@@ -306,7 +317,7 @@
 		<id>65</id>
 		<x>740</x>
 		<y>220</y>
-		<label>Delivered</label>
+		<label>Doručené</label>
 		<assignPolicy>auto</assignPolicy>
 		<finishPolicy>auto_no_data</finishPolicy>
 		<roleRef>
