@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>1</id>
+	<title>food_prep</title>
+	<!-- TRANSACTIONS -->
+	<!-- ROLES -->
+	<role>
+		<id>admin</id>
+		<title>admin</title>
+	</role>
+	<role>
+		<id>kuchar</id>
+		<title>Kuchár</title>
+	</role>
+	<!-- DATA -->
+	<data type="text">
+		<id>parent_id</id>
+		<title>rodic</title>
+	</data>
+	<data type="text">
+		<id>recept</id>
+		<title>recept</title>
+	</data>
+	<data type="text">
+		<id>666</id>
+		<title>enough</title>
+		<init>1</init>
+	</data>
+	<data type="text">
+		<id>88</id>
+		<title>not_enought</title>
+		<init>2</init>
+	</data>
+<!-- no ja neviem aky datovy typ mam vlastne cakat... -->
+<!-- sem potrebujem dostat recept, pocet konkretnych surovin, a najlepsie by bolo aj nejake id siete, kam sa ma vratit -->
+	
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>67</id>
+		<x>780</x>
+		<y>340</y>
+		<label>init_t</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>70</id>
+		<x>940</x>
+		<y>340</y>
+		<label>Priprava jedla</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<roleRef>
+		  	<id>kuchar</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<event type="finish">
+			<id>1</id>
+			<actions phase="post">
+				<action trigger="set">
+				<!-- recept: f.recept; -->
+				enough: f.666,
+				not_enought: f.88;
+				
+				def recept = 'rozok#1##parok#1'
+				def supplies = findCases( { it.processIdentifier.eq("skupina13Stock") } )
+				def ingredients = recept.split('##')
+				def ingredientReadyCounter = 0
+				ingredients.each {
+					def foodPrepData = (it as String).split('#')
+					
+					(supplies.size() as Integer).times { iter ->
+						def supply = supplies.get(iter)
+						if(supply.title.equals(foodPrepData[0] as String) &amp;&amp; (supply.dataSet["item_count"].value.toInteger().value >= foodPrepData[1].toInteger().value)) {
+							ingredientReadyCounter++
+						}
+					}
+				}
+				
+				if(ingredients.length == ingredientReadyCounter) { 
+					change enough value { 1 }
+					change not_enought value { 2 }
+					
+					ingredients.each {
+						def foodPrepData = (it as String).split('#')
+						
+						(supplies.size() as Integer).times { iter ->
+							def supply = supplies.get(iter)
+							if(supply.title.equals(foodPrepData[0] as String) &amp;&amp; (supply.dataSet["item_count"].value.toInteger().value >= foodPrepData[1].toInteger().value)) {
+								def final_count = supply.dataSet["item_count"].value.toInteger().value - foodPrepData[1].toInteger().value
+								setData("15", supply, [
+									"item_count": [ 
+									"value" : final_count, 
+									"type" : "number" ]
+									], 
+								)
+							}
+						}
+					} 
+				} else {
+					change enough value { 2 }
+					change not_enought value { 1 }
+				}
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>72</id>
+		<x>1140</x>
+		<y>340</y>
+		<label>Hotovko</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<roleRef>
+		  	<id>kuchar</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<event type="finish">
+			<id>1</id>
+			<actions phase="post">
+				<action trigger="set">
+				idParent: f.parent_id,
+				recept: f.recept;
+				
+				def orderCase = findCase( { it._id.eq(idParent.value.toString())})
+				def pocetHotovych = orderCase.dataSet["pocetJedalHotovych"].value + 1
+				def pocetJedal = orderCase.dataSet["pocetJedal"].value
+				setData("29", orderCase, [
+					"pocetJedalHotovych": [ 
+					"value" : pocetHotovych, 
+					"type" : "number" ]
+					], 
+				)
+				
+				if (pocetHotovych.value == pocetJedal.value){
+					def task = assignTask("29", orderCase, loggedUser())
+					finishTask(task)
+				}
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>78</id>
+		<x>1020</x>
+		<y>460</y>
+		<label>Padlo na zem nespravnou stranou</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<roleRef>
+		  	<id>kuchar</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>82</id>
+		<x>940</x>
+		<y>140</y>
+		<label>Vratit penaze</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<roleRef>
+		  	<id>kuchar</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<event type="finish">
+			<id>1</id>
+			<actions phase="post">
+				<action trigger="set">
+				idParent: f.parent_id,
+				recept: f.recept;
+				
+				def orderCase = findCase( { it._id.eq(idParent.value.toString())})
+				def pocetJedal = orderCase.dataSet["pocetJedal"].value
+				setData("29", orderCase, [
+					"pocetJedal": [ 
+					"value" : pocetJedal - 1, 
+					"type" : "number" ]
+					], 
+				)
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<!-- PLACES -->
+	<place>
+		<id>66</id>
+		<x>700</x>
+		<y>340</y>
+		<label>init</label>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>68</id>
+		<x>860</x>
+		<y>340</y>
+		<label>order</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>71</id>
+		<x>1020</x>
+		<y>340</y>
+		<label>prepared</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>81</id>
+		<x>940</x>
+		<y>260</y>
+		<label>not_enought_food</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<!-- ARCS -->
+	<arc>
+		<id>73</id>
+		<type>regular</type>
+		<sourceId>66</sourceId>
+		<destinationId>67</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>74</id>
+		<type>regular</type>
+		<sourceId>67</sourceId>
+		<destinationId>68</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>75</id>
+		<type>regular</type>
+		<sourceId>68</sourceId>
+		<destinationId>70</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>77</id>
+		<type>variable</type>
+		<sourceId>71</sourceId>
+		<destinationId>72</destinationId>
+		<multiplicity>666</multiplicity>
+	</arc>
+	<arc>
+		<id>79</id>
+		<type>variable</type>
+		<sourceId>71</sourceId>
+		<destinationId>78</destinationId>
+		<multiplicity>666</multiplicity>
+	</arc>
+	<arc>
+		<id>80</id>
+		<type>regular</type>
+		<sourceId>78</sourceId>
+		<destinationId>68</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>860</x><y>460</y></breakPoint>
+	</arc>
+	<arc>
+		<id>84</id>
+		<type>variable</type>
+		<sourceId>81</sourceId>
+		<destinationId>82</destinationId>
+		<multiplicity>88</multiplicity>
+	</arc>
+	<arc>
+		<id>92</id>
+		<type>regular</type>
+		<sourceId>70</sourceId>
+		<destinationId>81</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>93</id>
+		<type>regular</type>
+		<sourceId>70</sourceId>
+		<destinationId>71</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>94</id>
+		<type>reset</type>
+		<sourceId>81</sourceId>
+		<destinationId>78</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>95</id>
+		<type>reset</type>
+		<sourceId>71</sourceId>
+		<destinationId>82</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>96</id>
+		<type>reset</type>
+		<sourceId>81</sourceId>
+		<destinationId>72</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>1140</x><y>260</y></breakPoint>
+	</arc>
+</document>
