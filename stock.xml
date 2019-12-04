@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>test1</id>
+	<title>Zamestnanec</title>
+	<!-- TRANSACTIONS -->
+	<!-- ROLES -->
+	<role>
+		<id>employee</id>
+		<title>Zamestnanec</title>
+	</role>
+	<!-- DATA -->
+	<data type="text">
+		<id>name</id>
+		<title>Meno</title>
+	</data>
+	<data type="text">
+		<id>surname</id>
+		<title>Priezvisko</title>
+	</data>
+	<data type="number">
+		<id>add_num</id>
+		<title>Pridaj x kusov</title>
+		<init>0</init>
+	</data>
+	<data type="number">
+		<id>item_count</id>
+		<title>Pocet kusov</title>
+		<init>0</init>
+	</data>
+	<data type="number">
+		<id>take_num</id>
+		<title>Zobrat x kusov</title>
+	</data>
+	<data type="number">
+		<id>spoiled</id>
+		<title>Vyhod x kusov</title>
+	</data>
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>4</id>
+		<x>380</x>
+		<y>100</y>
+		<label>Pridaj</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>employee</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>0</id>
+			<dataRef>
+				<id>name</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>surname</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>item_count</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<!-- <event type="finish">
+			<id>set_stock</id>
+			<actions phase="post">
+				<action>
+					item_count : f.item_count,
+					add_num : t.add_num;
+
+					change item_count value { item_count.value + add_num.value }
+				</action>
+			</actions>
+		</event> -->
+	</transition>
+	<transition>
+		<id>5</id>
+		<x>380</x>
+		<y>340</y>
+		<label>Zobraz</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>employee</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>1</id>
+			<dataRef>
+				<id>name</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>surname</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>item_count</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+	</transition>
+	<transition>
+		<id>12</id>
+		<x>260</x>
+		<y>220</y>
+		<label>Vyhod</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>employee</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>2</id>
+			<dataRef>
+				<id>spoiled</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<event type="finish">
+			<id>set_spoiled</id>
+			<actions phase="post">
+				<action>
+					item_count : f.item_count,
+					spoiled : f.spoiled;
+					
+					change item_count value { item_count.value - spoiled.value }
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>15</id>
+		<x>500</x>
+		<y>220</y>
+		<label>Zober</label>
+		<assignPolicy>auto</assignPolicy>
+		<roleRef>
+			<id>employee</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>3</id>
+			<dataRef>
+				<id>take_num</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<event type="finish">
+			<id>set_take_num1</id>
+			<actions phase="post">
+				<action>
+					item_count : f.item_count,
+					take_num : f.take_num;
+					
+					change item_count value { item_count.value - take_num.value }
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<!-- PLACES -->
+	<place>
+		<id>6</id>
+		<x>380</x>
+		<y>220</y>
+		<label></label>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+	<!-- ARCS -->
+	<arc>
+		<id>7</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>5</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>340</x><y>260</y></breakPoint>
+	</arc>
+	<arc>
+		<id>8</id>
+		<type>regular</type>
+		<sourceId>5</sourceId>
+		<destinationId>6</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>420</x><y>260</y></breakPoint>
+	</arc>
+	<arc>
+		<id>10</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>4</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>420</x><y>180</y></breakPoint>
+	</arc>
+	<arc>
+		<id>11</id>
+		<type>regular</type>
+		<sourceId>4</sourceId>
+		<destinationId>6</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>340</x><y>180</y></breakPoint>
+	</arc>
+	<arc>
+		<id>13</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>12</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>340</x><y>180</y></breakPoint>
+	</arc>
+	<arc>
+		<id>14</id>
+		<type>regular</type>
+		<sourceId>12</sourceId>
+		<destinationId>6</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>340</x><y>260</y></breakPoint>
+	</arc>
+	<arc>
+		<id>16</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>15</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>420</x><y>260</y></breakPoint>
+	</arc>
+	<arc>
+		<id>17</id>
+		<type>regular</type>
+		<sourceId>15</sourceId>
+		<destinationId>6</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>420</x><y>180</y></breakPoint>
+	</arc>
+</document>

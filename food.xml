@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>1</id>
+	<!-- TRANSACTIONS -->
+	<!-- ROLES -->
+	<role>
+		<id>admin</id>
+		<title>admin</title>
+	</role>
+	<role>
+		<id>manager</id>
+		<title>Menedžeris</title>
+	</role>
+	<role>
+		<id>customer</id>
+		<title>Zákaznik</title>
+	</role>
+	<!-- DATA -->
+	<data type="text">
+		<id>parent_id</id>
+		<title>rodic</title>
+	</data>
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>1</id>
+		<x>340</x>
+		<y>220</y>
+		<label>Done</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<roleRef>
+		  	<id>manager</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<event type="finish">
+			<id>1</id>
+			<actions phase="post">
+				<action trigger="set">
+				idParent: f.parent_id;
+				def orderCase = findCase( { it._id.eq(idParent.value.toString())})
+				def pocetHotovych = orderCase.dataSet["pocetJedalHotovych"].value + 1
+				def pocetJedal = orderCase.dataSet["pocetJedal"].value
+				setData("29", orderCase, [
+					"pocetJedalHotovych": [ 
+					"value" : pocetHotovych, 
+					"type" : "number" ]
+					], 
+				)
+				
+				if (pocetHotovych.value == pocetJedal.value){
+					def task = assignTask("29", orderCase, loggedUser())
+					finishTask(task)
+				}
+				<!--TODO: Zrusit instanciu jedla po jeho vytvoreni (Nejde to) -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>3</id>
+		<x>180</x>
+		<y>220</y>
+		<label>Preparation</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<roleRef>
+		  	<id>manager</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>19</id>
+		<x>260.00720977783203</x>
+		<y>312</y>
+		<label>Spoiled</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+		<roleRef>
+		  	<id>manager</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>46</id>
+		<x>46.00720977783203</x>
+		<y>299</y>
+		<label>init_t</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+	</transition>
+	<transition>
+		<id>51</id>
+		<x>68.00720977783203</x>
+		<y>104</y>
+		<label>Cancel_order</label>
+		<assignPolicy>auto</assignPolicy>
+		<finishPolicy>auto_no_data</finishPolicy>
+		<roleRef>
+		  	<id>admin</id>
+		  	<logic>
+		    	<perform>true</perform>
+		    	<cancel>true</cancel>
+		  	</logic>
+		</roleRef>
+	</transition>
+	<!-- PLACES -->
+	<place>
+		<id>2</id>
+		<x>100</x>
+		<y>220</y>
+		<label>Order was placed</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>4</id>
+		<x>260</x>
+		<y>220</y>
+		<label>In stock - prepared</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>26</id>
+		<x>509.00720977783203</x>
+		<y>85</y>
+		<label>Toto je len zivotny cyklus jedla, jedlo neriesi objednavu, ani platbu</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>34</id>
+		<x>178.00720977783203</x>
+		<y>132</y>
+		<label></label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>45</id>
+		<x>44.00720977783203</x>
+		<y>385</y>
+		<label>init</label>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+	<!-- ARCS -->
+	<arc>
+		<id>9</id>
+		<type>regular</type>
+		<sourceId>2</sourceId>
+		<destinationId>3</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>10</id>
+		<type>regular</type>
+		<sourceId>3</sourceId>
+		<destinationId>4</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>11</id>
+		<type>regular</type>
+		<sourceId>4</sourceId>
+		<destinationId>1</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>22</id>
+		<type>regular</type>
+		<sourceId>4</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>40</id>
+		<type>regular</type>
+		<sourceId>34</sourceId>
+		<destinationId>3</destinationId>
+		<multiplicity>3</multiplicity>
+	</arc>
+	<arc>
+		<id>47</id>
+		<type>regular</type>
+		<sourceId>45</sourceId>
+		<destinationId>46</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>48</id>
+		<type>regular</type>
+		<sourceId>46</sourceId>
+		<destinationId>2</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>49</id>
+		<type>regular</type>
+		<sourceId>46</sourceId>
+		<destinationId>34</destinationId>
+		<multiplicity>6</multiplicity>
+		<breakPoint><x>42.00720977783203</x><y>202</y></breakPoint>
+	</arc>
+	<arc>
+		<id>50</id>
+		<type>regular</type>
+		<sourceId>19</sourceId>
+		<destinationId>45</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>53</id>
+		<type>regular</type>
+		<sourceId>2</sourceId>
+		<destinationId>51</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>57</id>
+		<type>inhibitor</type>
+		<sourceId>34</sourceId>
+		<destinationId>51</destinationId>
+		<multiplicity>3</multiplicity>
+	</arc>
+	<arc>
+		<id>58</id>
+		<type>reset</type>
+		<sourceId>34</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>59</id>
+		<type>reset</type>
+		<sourceId>34</sourceId>
+		<destinationId>1</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+</document>
