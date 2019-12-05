@@ -31,6 +31,11 @@
 		<title>not_enought</title>
 		<init>2</init>
 	</data>
+	<data type="number">
+		<id>price</id>
+		<title>price</title>
+		<init>2</init>
+	</data>
 <!-- no ja neviem aky datovy typ mam vlastne cakat... -->
 <!-- sem potrebujem dostat recept, pocet konkretnych surovin, a najlepsie by bolo aj nejake id siete, kam sa ma vratit -->
 	
@@ -79,6 +84,7 @@
 				not_enought: f.88;
 				
 				def recept = 'rozok#1##parok#1'
+				
 				def supplies = findCases( { it.processIdentifier.eq("skupina13Stock") } )
 				def ingredients = recept.split('##')
 				def ingredientReadyCounter = 0
@@ -214,13 +220,18 @@
 			<actions phase="post">
 				<action trigger="set">
 				idParent: f.parent_id,
+				price: f.price,
 				recept: f.recept;
 				
 				def orderCase = findCase( { it._id.eq(idParent.value.toString())})
 				def pocetJedal = orderCase.dataSet["pocetJedal"].value
+				def final_price = orderCase.dataSet["vratene_peniaze"].value + price.value
 				setData("29", orderCase, [
 					"pocetJedal": [ 
 					"value" : pocetJedal - 1, 
+					"type" : "number" ],
+					"vratene_peniaze": [ 
+					"value" : final_price, 
 					"type" : "number" ]
 					], 
 				)

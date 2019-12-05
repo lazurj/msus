@@ -17,11 +17,22 @@
 	<data type="enumeration">
 		<id>jedlo</id>
 		<title>Jedlo - vsetky</title>
+		<values>banan</values>
 		<values>vegetarian-burger</values>
 		<values>hovadzi-burger</values>
 		<values>double-hovadzi-burger</values>
 		<values>kuraci-burger</values>
 		<values>hot-dog</values>
+	</data>
+	<data type="enumeration">
+		<id>cena_jedla</id>
+		<title>Ceny</title>
+		<values>1</values>
+		<values>5</values>
+		<values>6</values>
+		<values>8</values>
+		<values>5</values>
+		<values>2</values>
 	</data>
 	<data type="enumeration">
 		<id>jedlo_active</id>
@@ -88,6 +99,16 @@
 		<title>Podpis</title>
 		<valid>regex("[a-zA-Z]")</valid>
 	</data>
+	<data type="number">
+		<id>vysledna_cena</id>
+		<title>Výsledná cena</title>
+		<init>0</init>
+	</data>
+	<data type="number">
+		<id>vratene_peniaze</id>
+		<title>Vrátené peniaze</title>
+		<init>0</init>
+	</data>
 	<!-- TRANSITIONS -->
 	<transition>
 		<id>7</id>
@@ -125,11 +146,30 @@
 					pocetJedal: f.pocetJedal,
 					vybraneJedla: f.vybraneJedla,
 					vybraneJedlaText: f.vybraneJedlaText,
-					jedla : f.jedlo_active;
+					jedla: f.jedlo_active,
+					vysledna_cena: f.vysledna_cena,
+					cena_jedla: f.cena_jedla,
+					jedlo: f.jedlo;
+					
+					def indexVal = 0
+					
 					if(vybraneJedla.choices == null){ change vybraneJedla choices { new java.util.LinkedHashSet() } }
+							
+					if(!vysledna_cena) {
+						change vysledna_cena value { 0 }
+					}
+					
+					
+							
+					jedlo.choices.eachWithIndex { value, index ->
+						if( value.toString().equals(jedla.value.toString()) ) {
+							change vysledna_cena value { vysledna_cena.value + cena_jedla.choices.getAt(index).toString().toInteger() }
+						}
+					} 
+
 					change pocetJedal value { pocetJedal.value +1 }
 					change vybraneJedla choices { vybraneJedla.choices +=  jedla.value}
-					change vybraneJedlaText value { vybraneJedlaText.value += ((jedla.value as String) + ", " as String)}
+					change vybraneJedlaText value { vybraneJedlaText.value += ((jedla.value as String) + ", " as String)}		
 				</action>
 			</actions>
 		</event>
@@ -196,7 +236,7 @@
 				def iter = 0
 				(pocetJedal.value as Integer).times{
 					def child = createCase("skupina13matusFood", "Jedlo "+iter.toString(), "color-fg-amber-500")
-					def task = assignTask("46", child, loggedUser())
+					def task = assignTask("67", child, loggedUser())
 					setData(task, [ "parent_id": [ "value" : useCase.stringId, "type" : "text" ] ])
 					finishTask(task)
 					iter++
@@ -294,6 +334,8 @@
 			<logic>
 				<perform>true</perform>
 			</logic>
+		</roleRef>
+		<roleRef>
 			<id>admin</id>
 			<logic>
 				<perform>true</perform>
@@ -377,13 +419,13 @@
 				</logic>
 			</dataRef>
 			<dataRef>
-				<id>iban</id>
+				<id>vysledna_cena</id>
 				<logic>
 					<behavior>visible</behavior>
 				</logic>
 			</dataRef>
 			<dataRef>
-				<id>recepty</id>
+				<id>iban</id>
 				<logic>
 					<behavior>visible</behavior>
 				</logic>
@@ -430,6 +472,18 @@
 			<title>Doručenie objednávky</title>
 			<dataRef>
 				<id>vybraneJedlaText</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>vratene_peniaze</id>
+				<logic>
+					<behavior>visible</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>vysledna_cena</id>
 				<logic>
 					<behavior>visible</behavior>
 				</logic>
