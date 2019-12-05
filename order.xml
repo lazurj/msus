@@ -23,7 +23,6 @@
 		<values>double-hovadzi-burger</values>
 		<values>kuraci-burger</values>
 		<values>hot-dog</values>
-		<values>banan</values>
 	</data>
 	<data type="enumeration">
 		<id>cena_jedla</id>
