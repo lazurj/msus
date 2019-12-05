@@ -18,6 +18,10 @@
 		<title>rodic</title>
 	</data>
 	<data type="text">
+		<id>jedlo</id>
+		<title>Jedlo</title>
+	</data>
+	<data type="text">
 		<id>recept</id>
 		<title>recept</title>
 	</data>
@@ -79,22 +83,28 @@
 			<id>1</id>
 			<actions phase="post">
 				<action trigger="set">
-				<!-- recept: f.recept; -->
 				enough: f.666,
-				not_enought: f.88;
-				
-				def recept = 'rozok#1##parok#1'
+				not_enought: f.88,
+				idParent: f.parent_id,
+				jedlo : f.jedlo;
 				
 				def supplies = findCases( { it.processIdentifier.eq("skupina13Stock") } )
-				def ingredients = recept.split('##')
+				def orderCase = findCase( { it._id.eq(idParent.value.toString())})
+				def recepty = orderCase.dataSet["recepty"].value as String
+				def receptArray = recepty.split('####')
 				def ingredientReadyCounter = 0
-				ingredients.each {
-					def foodPrepData = (it as String).split('#')
-					
-					(supplies.size() as Integer).times { iter ->
-						def supply = supplies.get(iter)
-						if(supply.title.equals(foodPrepData[0] as String) &amp;&amp; (supply.dataSet["item_count"].value.toInteger().value >= foodPrepData[1].toInteger().value)) {
-							ingredientReadyCounter++
+				receptArray.each { recept ->
+					def receptDetailArray = recept.split('###')
+					if (jedlo.value.toString().equals(receptDetailArray[0] as String)) {
+						def ingredients = receptDetailArray[1].split('##')
+						ingredients.each {
+							def foodPrepData = (it as String).split('#')
+							(supplies.size() as Integer).times { iter ->
+								def supply = supplies.get(iter)
+								if(supply.title.equals(foodPrepData[0] as String) &amp;&amp; (supply.dataSet["item_count"].value.toInteger().value >= foodPrepData[1].toInteger().value)) {
+									ingredientReadyCounter++
+								}
+							}
 						}
 					}
 				}

@@ -23,6 +23,7 @@
 		<values>double-hovadzi-burger</values>
 		<values>kuraci-burger</values>
 		<values>hot-dog</values>
+		<values>banan</values>
 	</data>
 	<data type="enumeration">
 		<id>cena_jedla</id>
@@ -231,15 +232,14 @@
 				pocetJedal: f.pocetJedal,
 				vyberOsobne : f.56,
 				vyberKurier : f.55,
-				typDopravy : f.doprava;
-				
-				def iter = 0
-				(pocetJedal.value as Integer).times{
-					def child = createCase("skupina13matusFood", "Jedlo "+iter.toString(), "color-fg-amber-500")
+				typDopravy : f.doprava,
+				vybranejedla : f.vybraneJedla;
+			
+				vybranejedla.choices.each{ jedlo ->
+					def child = createCase("Skupina13FoodJakub", "Jedlo -"+jedlo, "color-fg-amber-500")
 					def task = assignTask("67", child, loggedUser())
-					setData(task, [ "parent_id": [ "value" : useCase.stringId, "type" : "text" ] ])
+					setData(task, [ "parent_id": [ "value" : useCase.stringId, "type" : "text" ], "jedlo": [ "value" : (jedlo as String), "type" : "text" ] ])
 					finishTask(task)
-					iter++
 				}
 
 				if((typDopravy.value as String).equals("Osobný odber")){
@@ -361,11 +361,11 @@
 					def first = true
 					recepty.each { key, value ->
 						if (first == false) {
-							tmp += '|'
+							tmp += '####'
 						}
 						first = false;
 						tmp += key
-						tmp += '!'
+						tmp += '###'
 						tmp += value	
 					}
 					change globalRecepty value { tmp as String}
